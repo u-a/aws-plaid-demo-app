@@ -3,6 +3,9 @@ import { Authenticator } from "@aws-amplify/ui-react";
 import Protected from './pages/Protected';
 import Login from './pages/Login';
 import Institution from './pages/Institution';
+import Accounts from './pages/Accounts';
+import Transactions from './pages/Transactions';
+import Settings from './pages/Settings';
 import Layout from './components/Layout';
 import RequireAuth from './RequireAuth';
 
@@ -20,6 +23,30 @@ function App() {
               element={
                 <RequireAuth>
                   <Protected />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/accounts"
+              element={
+                <RequireAuth>
+                  <Accounts />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <RequireAuth>
+                  <Transactions />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <Settings />
                 </RequireAuth>
               }
             />
