@@ -7,7 +7,7 @@ import { getTransactions as GetTransactions } from '../graphql/queries';
 
 const logger = new ConsoleLogger("Transactions");
 
-export default function Transactions({ id, accounts = {} }) {
+export default function Transactions({ id, accounts = {}, selectedAccount }) {
 
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
@@ -19,6 +19,9 @@ export default function Transactions({ id, accounts = {} }) {
 
   const getTransactions = async () => {
     setLoading(true);
+    setTransactions([]);
+    setNextToken(null);
+    setHasMorePages(false);
     try {
       const res = await client.graphql({
         query: GetTransactions,
@@ -56,8 +59,15 @@ export default function Transactions({ id, accounts = {} }) {
   }
 
   useEffect(() => {
-    getTransactions();
-  }, []);
+    if (id) {
+      getTransactions();
+    }
+  }, [id]);
+
+  const filteredTransactions = selectedAccount
+    ? transactions.filter(t => t.account_id === selectedAccount.account_id)
+    : [];
+
 
   return (
     <View>
@@ -80,22 +90,20 @@ export default function Transactions({ id, accounts = {} }) {
             </TableCell>
           </TableRow>
           ) : (
-            transactions.length ? (
-              transactions.map((transaction) => {
+            filteredTransactions.length ? (
+              filteredTransactions.map((transaction) => {
                 return <Transaction key={transaction.transaction_id} transaction={transaction} account={accounts[transaction.account_id]}/>;
               })
             ) : (
               <TableRow>
-                <TableCell colSpan="6">Waiting for transaction data...</TableCell>
+                <TableCell colSpan="6">No transactions for this account.</TableCell>
               </TableRow>
             )
           )}
         </TableBody>
       </Table>
-      {transactions.length ? (
-        <Button isDisabled={!hasMorePages} onClick={handleLoadMore} size="small" variable="primary">Load More</Button>
-        ) : (
-        <div/>
+      {hasMorePages && (
+        <Button onClick={handleLoadMore} size="small" variation="primary">Load More</Button>
       )}
     </View>
   )

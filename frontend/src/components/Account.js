@@ -1,7 +1,7 @@
 import { TableRow, TableCell } from '@aws-amplify/ui-react';
 import Currency from './Currency';
 
-export default function Account({ account }) {
+export default function Account({ account, onAccountSelect, isSelected }) {
 
   const getBalanceColor = (type) => {
     if (type === 'depository' || type === 'investment') {
@@ -14,7 +14,7 @@ export default function Account({ account }) {
   }
 
   return (
-    <TableRow>
+    <TableRow onClick={() => onAccountSelect(account)} style={{cursor: 'pointer', backgroundColor: isSelected ? '#e6f7ff' : 'transparent'}}>
       <TableCell>{ account.name }</TableCell>
       <TableCell>
         <span style={{ color: getBalanceColor(account.type) }}>

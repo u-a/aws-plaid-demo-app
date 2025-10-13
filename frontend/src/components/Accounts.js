@@ -7,7 +7,7 @@ import Account from './Account';
 
 const logger = new ConsoleLogger("Accounts");
 
-export default function Accounts({ id, updateAccounts }) {
+export default function Accounts({ id, updateAccounts, onAccountSelect, selectedAccount }) {
 
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState([]);
@@ -55,7 +55,8 @@ export default function Accounts({ id, updateAccounts }) {
         ) : (
           accounts.length ? (
             accounts.map((account) => {
-              return <Account key={account.account_id} account={account}/>;
+              const isSelected = selectedAccount?.account_id === account.account_id;
+              return <Account key={account.account_id} account={account} onAccountSelect={onAccountSelect} isSelected={isSelected} />;
             })
           ) : (
             <TableRow>
