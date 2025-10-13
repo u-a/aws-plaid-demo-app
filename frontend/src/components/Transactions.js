@@ -1,9 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
-import { Table, TableHead, TableRow, TableCell, TableBody, Loader, View, Button } from '@aws-amplify/ui-react';
+import { 
+  Table, 
+  TableHead, 
+  TableRow, 
+  TableCell, 
+  TableBody, 
+  Loader, 
+  View, 
+  Button,
+  Flex,
+  SearchField,
+  SelectField,
+  Text,
+  Heading,
+  Card
+} from '@aws-amplify/ui-react';
 import Transaction from './Transaction';
 import { getTransactions as GetTransactions } from '../graphql/queries';
+import Currency from './Currency';
 
 const logger = new ConsoleLogger("Transactions");
 
@@ -11,11 +27,33 @@ export default function Transactions({ id, accounts = {}, selectedAccount }) {
 
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-
   const [nextToken, setNextToken] = useState(null);
   const [hasMorePages, setHasMorePages] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   const client = generateClient();
+
+  const handleSort = (key) => {
+    setSortConfig(current => ({
+      key,
+      direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getTransactionStats = (transactions) => {
+    return transactions.reduce((acc, transaction) => {
+      const amount = parseFloat(transaction.amount) || 0;
+      if (amount > 0) {
+        acc.income += amount;
+      } else {
+        acc.expenses += Math.abs(amount);
+      }
+      return acc;
+    }, { income: 0, expenses: 0 });
+  };
 
   const getTransactions = async () => {
     setLoading(true);

@@ -12,14 +12,19 @@ export default function Institution({ institution }) {
   return (
     <Card
       onClick={handleClick}
-      width="300px"
-      padding="1.5rem"
+      width={{ base: '100%', medium: '300px' }}
+      padding={{ base: '1rem', medium: '1.5rem' }}
       style={{
         cursor: 'pointer',
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-        ':hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        '@media (hover: hover)': {
+          ':hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }
+        },
+        ':active': {
+          backgroundColor: 'var(--amplify-colors-background-secondary)'
         }
       }}
     >

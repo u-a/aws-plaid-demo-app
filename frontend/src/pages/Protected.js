@@ -84,26 +84,59 @@ export default function Protected() {
     getItemsAndAccounts();
   }, []);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <Flex direction="row" minHeight="100vh">
+    <Flex direction={{ base: 'column', large: 'row' }} minHeight="100vh">
+      {/* Mobile Header */}
+      <View
+        display={{ base: 'block', large: 'none' }}
+        padding="1rem"
+        backgroundColor="var(--amplify-colors-background-secondary)"
+      >
+        <Flex justifyContent="space-between" alignItems="center">
+          <Heading level={4}>Financial Dashboard</Heading>
+          <Button
+            variation="link"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <Icon fontSize="1.5rem">{isSidebarOpen ? 'close' : 'menu'}</Icon>
+          </Button>
+        </Flex>
+      </View>
+
       {/* Sidebar Navigation */}
       <View 
-        width="250px" 
+        width={{ base: '100%', large: '250px' }}
         padding="1.5rem"
         backgroundColor="var(--amplify-colors-background-secondary)"
-        style={{ borderRight: '1px solid var(--amplify-colors-border-secondary)' }}
+        style={{ 
+          borderRight: '1px solid var(--amplify-colors-border-secondary)',
+          display: { base: isSidebarOpen ? 'block' : 'none', large: 'block' },
+          position: { base: 'fixed', large: 'relative' },
+          top: { base: '60px', large: '0' },
+          left: '0',
+          right: '0',
+          zIndex: '100'
+        }}
       >
         <Flex direction="column" gap="2rem">
-          <Heading level={4}>Financial Dashboard</Heading>
+          <Heading level={4} display={{ base: 'none', large: 'block' }}>
+            Financial Dashboard
+          </Heading>
           <Flex direction="column" gap="0.5rem">
             {navItems.map((item) => (
               <Button
                 key={item.path}
                 variation="text"
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  setIsSidebarOpen(false);
+                }}
                 style={{
                   justifyContent: 'flex-start',
-                  backgroundColor: location.pathname === item.path ? 'var(--amplify-colors-background-tertiary)' : 'transparent'
+                  backgroundColor: location.pathname === item.path ? 'var(--amplify-colors-background-tertiary)' : 'transparent',
+                  padding: '0.75rem'
                 }}
               >
                 <Flex gap="0.5rem" alignItems="center">
@@ -117,18 +150,34 @@ export default function Protected() {
       </View>
       
       {/* Main Content */}
-      <View flex="1" padding="2rem" backgroundColor="var(--amplify-colors-background-primary)">
-        <Flex direction="column" gap="2rem">
+      <View 
+        flex="1" 
+        padding={{ base: '1rem', medium: '2rem' }}
+        backgroundColor="var(--amplify-colors-background-primary)"
+        style={{
+          marginTop: { base: isSidebarOpen ? '60px' : '0', large: '0' }
+        }}
+      >
+        <Flex direction="column" gap={{ base: '1rem', medium: '2rem' }}>
           {/* Breadcrumbs */}
-          <Flex gap="0.5rem" color="var(--amplify-colors-neutral-60)">
+          <Flex 
+            gap="0.5rem" 
+            color="var(--amplify-colors-neutral-60)"
+            display={{ base: 'none', medium: 'flex' }}
+          >
             <Text>Dashboard</Text>
             <Text>/</Text>
             <Text>Overview</Text>
           </Flex>
 
           {error && (
-            <View padding="1rem" backgroundColor="var(--amplify-colors-red-10)" color="var(--amplify-colors-red-80)" borderRadius="medium">
-              <Text>{error}</Text>
+            <View 
+              padding="1rem" 
+              backgroundColor="var(--amplify-colors-red-10)" 
+              color="var(--amplify-colors-red-80)" 
+              borderRadius="medium"
+            >
+              <Text fontSize={{ base: 'small', medium: 'medium' }}>{error}</Text>
             </View>
           )}
 

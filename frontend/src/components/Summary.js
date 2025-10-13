@@ -25,7 +25,11 @@ export default function Summary({ assets, liabilities, isLoading }) {
   );
 
   return (
-    <Flex direction="row" gap="1.5rem" justifyContent="center">
+    <Flex 
+      direction={{ base: 'column', medium: 'row' }} 
+      gap={{ base: '1rem', medium: '1.5rem' }} 
+      justifyContent="center"
+    >
       <SummaryCard 
         title="Total Assets"
         amount={assets}
