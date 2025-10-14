@@ -636,6 +636,95 @@ Resources:
         Name: APPSYNC_JS
         RuntimeVersion: "1.0.0"
 
+  GetFinancialSummaryFunctionConfiguration:
+    Type: "AWS::AppSync::FunctionConfiguration"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      CodeS3Location: backend/resolvers/Query.getFinancialSummary.js
+      DataSourceName: !GetAtt DynamoDBDataSource.Name
+      Name: GET_FINANCIAL_SUMMARY
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+
+  GetFinancialSummaryResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Code: |-
+        export function request(ctx) {
+          return {};
+        }
+
+        export function response(ctx) {
+          return ctx.prev.result;
+        }
+      FieldName: getFinancialSummary
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+          - !GetAtt GetFinancialSummaryFunctionConfiguration.FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+      TypeName: Query
+
+  GetItemsWithAccountsFunctionConfiguration:
+    Type: "AWS::AppSync::FunctionConfiguration"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      CodeS3Location: backend/resolvers/Query.getItemsWithAccounts.js
+      DataSourceName: !GetAtt DynamoDBDataSource.Name
+      Name: GET_ITEMS_WITH_ACCOUNTS
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+
+  GetItemsStep1FunctionConfiguration:
+    Type: "AWS::AppSync::FunctionConfiguration"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      CodeS3Location: backend/resolvers/Query.getItemsWithAccounts.step1.js
+      DataSourceName: !GetAtt DynamoDBDataSource.Name
+      Name: GET_ITEMS_STEP1
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+
+  GetItemsStep2FunctionConfiguration:
+    Type: "AWS::AppSync::FunctionConfiguration"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      CodeS3Location: backend/resolvers/Query.getItemsWithAccounts.step2.js
+      DataSourceName: !GetAtt DynamoDBDataSource.Name
+      Name: GET_ITEMS_STEP2
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+
+  GetItemsWithAccountsResolver:
+    Type: "AWS::AppSync::Resolver"
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Code: |-
+        export function request(ctx) {
+          return {};
+        }
+
+        export function response(ctx) {
+          return ctx.prev.result;
+        }
+      FieldName: getItemsWithAccounts
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+          - !GetAtt GetItemsStep1FunctionConfiguration.FunctionId
+          - !GetAtt GetItemsStep2FunctionConfiguration.FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: "1.0.0"
+      TypeName: Query
+
   HttpApiAuthorizer:
     Type: "AWS::ApiGatewayV2::Authorizer"
     Properties:
@@ -659,7 +748,7 @@ Resources:
       IntegrationUri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiFunction.Arn}/invocations"
       IntegrationType: AWS_PROXY
       PayloadFormatVersion: "2.0"
-      TimeoutInMillis: 10000 # 10 seconds (matches Plaid's webhook timeout)
+      TimeoutInMillis: 10000 
 
   HttpApiLambdaPermission:
     Type: "AWS::Lambda::Permission"
