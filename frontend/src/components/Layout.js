@@ -28,12 +28,13 @@ export default function Layout() {
   }
 
   return (
-    <Flex direction={{ base: 'column', large: 'row' }}>
+    <Flex direction={{ base: 'column', medium: 'row' }}>
       {/* Mobile Header */}
       <View
-        display={{ base: 'block', large: 'none' }}
+        display={{ base: 'block', medium: 'none' }}
         padding="1rem"
         backgroundColor="var(--amplify-colors-background-secondary)"
+        height="56px"
         style={{
           position: 'fixed',
           top: 0,
@@ -56,20 +57,22 @@ export default function Layout() {
 
       {/* Sidebar */}
       <View
-        width={{ base: '100%', large: '250px' }}
-        height={{ base: 'auto', large: '100vh' }}
+        width={{ base: '280px', medium: '280px' }}
+        height={{ base: 'calc(100vh - 56px)', medium: '100vh' }}
         padding="1.5rem"
         backgroundColor="var(--amplify-colors-background-secondary)"
-        position={{ base: 'fixed', large: 'sticky' }}
-        top="0"
-        display={{ base: isSidebarOpen ? 'block' : 'none', large: 'block' }}
+        position={{ base: 'fixed', medium: 'sticky' }}
+        top={{ base: '56px', medium: '0' }}
+        left="0"
+        display={{ base: isSidebarOpen ? 'block' : 'none', medium: 'block' }}
         style={{
           zIndex: 99,
-          borderRight: '1px solid var(--amplify-colors-border-secondary)'
+          borderRight: '1px solid var(--amplify-colors-border-secondary)',
+          overflowY: 'auto'
         }}
       >
         <Flex direction="column" height="100%">
-          <Heading level={4} display={{ base: 'none', large: 'block' }}>
+          <Heading level={4} display={{ base: 'none', medium: 'block' }}>
             Financial Dashboard
           </Heading>
           
@@ -87,12 +90,18 @@ export default function Layout() {
                   backgroundColor: location.pathname === item.path 
                     ? 'var(--amplify-colors-background-tertiary)' 
                     : 'transparent',
-                  padding: '0.75rem'
+                  padding: '0.75rem',
+                  width: '100%',
+                  minHeight: '44px'
                 }}
               >
-                <Flex gap="0.5rem" alignItems="center">
-                  <Icon fontSize="1.2rem">{item.icon}</Icon>
-                  <Text>{item.name}</Text>
+                <Flex gap="0.5rem" alignItems="center" width="100%">
+                  <Icon fontSize="1.2rem" flexShrink={0}>{item.icon}</Icon>
+                  <Text style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>{item.name}</Text>
                 </Flex>
               </Button>
             ))}
@@ -115,12 +124,29 @@ export default function Layout() {
         </Flex>
       </View>
 
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <View
+          display={{ base: 'block', medium: 'none' }}
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          backgroundColor="rgba(0,0,0,0.3)"
+          zIndex="98"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
       <View
         flex="1"
         backgroundColor="white"
-        marginTop={{ base: '56px', large: '0' }}
+        marginTop={{ base: '56px', medium: '0' }}
         minHeight="100vh"
+        position="relative"
+        maxWidth={{ medium: 'calc(100% - 280px)' }}
       >
         <Outlet />
       </View>
