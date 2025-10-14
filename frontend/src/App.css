@@ -1,5 +1,18 @@
 #root {
   text-align: center;
+  /* Remove margin when using Layout component with fixed sidebar */
+  margin: 0;
+}
+
+/* Only apply margin to auth pages */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Apply margin to pages inside Layout */
+.page-content {
   margin: 1.2rem;
 }
 
@@ -8,10 +21,4 @@ nav {
   justify-content: center;
   gap: 2rem;
   margin-bottom: 2rem;
-}
-
-.auth-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
 }

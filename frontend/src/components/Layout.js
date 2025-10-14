@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthenticator, Button, Heading, View, Flex, Text, Icon } from '@aws-amplify/ui-react';
 
@@ -10,6 +10,20 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Use 992px to match Amplify's 'large' breakpoint
+  // This ensures consistency: mobile menu shows when < 992px
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 992);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   function logOut() {
     signOut();
@@ -28,53 +42,63 @@ export default function Layout() {
   }
 
   return (
-    <Flex direction={{ base: 'column', medium: 'row' }}>
-      {/* Mobile Header */}
-      <View
-        display={{ base: 'block', medium: 'none' }}
-        padding="1rem"
-        backgroundColor="var(--amplify-colors-background-secondary)"
-        height="56px"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderBottom: '1px solid var(--amplify-colors-border-secondary)'
-        }}
-      >
-        <Flex justifyContent="space-between" alignItems="center">
-          <Heading level={4}>Financial Dashboard</Heading>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh' }}>
+      {/* Mobile Header - Only show on mobile */}
+      {isMobile && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '56px',
+            padding: '1rem',
+            backgroundColor: 'var(--amplify-colors-background-secondary)',
+            borderBottom: '1px solid var(--amplify-colors-border-secondary)',
+            zIndex: 100,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <Heading level={4} margin={0}>Financial Dashboard</Heading>
           <Button
             variation="link"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            style={{
+              padding: '0.5rem',
+              color: 'var(--amplify-colors-font-primary)',
+              backgroundColor: 'transparent'
+            }}
           >
             <Icon fontSize="1.5rem">{isSidebarOpen ? 'close' : 'menu'}</Icon>
           </Button>
-        </Flex>
-      </View>
+        </div>
+      )}
 
-      {/* Sidebar */}
-      <View
-        width={{ base: '280px', medium: '280px' }}
-        height={{ base: 'calc(100vh - 56px)', medium: '100vh' }}
-        padding="1.5rem"
-        backgroundColor="var(--amplify-colors-background-secondary)"
-        position={{ base: 'fixed', medium: 'sticky' }}
-        top={{ base: '56px', medium: '0' }}
-        left="0"
-        display={{ base: isSidebarOpen ? 'block' : 'none', medium: 'block' }}
+      {/* Sidebar - Always rendered, visibility controlled */}
+      <div
         style={{
-          zIndex: 99,
+          width: '280px',
+          height: isMobile ? 'calc(100vh - 56px)' : '100vh',
+          padding: '1.5rem',
+          backgroundColor: 'var(--amplify-colors-background-secondary)',
           borderRight: '1px solid var(--amplify-colors-border-secondary)',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          position: isMobile ? 'fixed' : 'sticky',
+          top: isMobile ? '56px' : '0',
+          left: '0',
+          zIndex: 99,
+          display: isMobile && !isSidebarOpen ? 'none' : 'flex',
+          flexDirection: 'column'
         }}
       >
         <Flex direction="column" height="100%">
-          <Heading level={4} display={{ base: 'none', medium: 'block' }}>
-            Financial Dashboard
-          </Heading>
+          {!isMobile && (
+            <Heading level={4}>
+              Financial Dashboard
+            </Heading>
+          )}
           
           <Flex direction="column" gap="0.5rem" marginTop="2rem">
             {navItems.map((item) => (
@@ -122,34 +146,38 @@ export default function Layout() {
             </Flex>
           </Button>
         </Flex>
-      </View>
+      </div>
 
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <View
-          display={{ base: 'block', medium: 'none' }}
-          position="fixed"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          backgroundColor="rgba(0,0,0,0.3)"
-          zIndex="98"
+      {/* Mobile Overlay - Only show on mobile when sidebar is open */}
+      {isMobile && isSidebarOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            zIndex: 98
+          }}
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Main Content */}
-      <View
-        flex="1"
-        backgroundColor="white"
-        marginTop={{ base: '56px', medium: '0' }}
-        minHeight="100vh"
-        position="relative"
-        maxWidth={{ medium: 'calc(100% - 280px)' }}
+      <div
+        style={{
+          flex: 1,
+          backgroundColor: 'white',
+          marginTop: isMobile ? '56px' : '0',
+          minHeight: '100vh',
+          position: 'relative',
+          maxWidth: isMobile ? '100%' : 'calc(100% - 280px)',
+          padding: '1.5rem'
+        }}
       >
         <Outlet />
-      </View>
-    </Flex>
+      </div>
+    </div>
   );
 }
