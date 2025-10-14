@@ -1,32 +1,17 @@
-import { useState } from 'react';
-import { post } from 'aws-amplify/api';
-import { ConsoleLogger } from 'aws-amplify/utils';
-import { Button } from '@aws-amplify/ui-react';
+import React from 'react';
+import { Button, Flex, Text } from '@aws-amplify/ui-react';
 
-const logger = new ConsoleLogger("Refresh");
-
-const apiName = "plaidapi";
-
-export default function Refresh({ item_id }) {
-  const [loading, setLoading] = useState(false);
-
-  const refresh = async() => {
-    setLoading(true);
-    try {
-      const { body } = await post({
-        apiName,
-        path: `/v1/items/${item_id}/refresh`
-      }).response;
-      const data = await body.json();
-      logger.debug(`POST /v1/items/${item_id}/refresh response:`, data);
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-      logger.error('unable to refresh item', err);
-    }
-  }
-
+export default function Refresh({ onRefresh, isLoading, lastUpdated }) {
   return (
-    <Button isLoading={loading} onClick={refresh} size="small">Refresh Balances</Button>
-  )
+    <Flex justifyContent="flex-end" alignItems="center" gap="1rem">
+      {lastUpdated && (
+        <Text fontSize="0.8rem" color="var(--amplify-colors-neutral-60)">
+          Last updated: {lastUpdated.toLocaleString()}
+        </Text>
+      )}
+      <Button onClick={onRefresh} disabled={isLoading}>
+        {isLoading ? 'Refreshing...' : 'Refresh'}
+      </Button>
+    </Flex>
+  );
 }

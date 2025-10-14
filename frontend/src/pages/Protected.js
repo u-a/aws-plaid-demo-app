@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
-import { View, Heading, Flex, Text, Button, Icon } from '@aws-amplify/ui-react';
+import { View, Heading, Flex, Text } from '@aws-amplify/ui-react';
 import { getItems as GetItems, getAccounts as GetAccounts } from '../graphql/queries';
-import Plaid from '../components/Plaid';
 import Institutions from '../components/Institutions';
 import Summary from '../components/Summary';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 const logger = new ConsoleLogger("Protected");
 
@@ -16,16 +14,8 @@ export default function Protected() {
   const [liabilities, setLiabilities] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const client = generateClient();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const navItems = [
-    { name: 'Overview', path: '/', icon: 'home' },
-    { name: 'Accounts', path: '/accounts', icon: 'account_balance' },
-    { name: 'Transactions', path: '/transactions', icon: 'receipt' },
-    { name: 'Settings', path: '/settings', icon: 'settings' }
-  ];
 
   const getItemsAndAccounts = async () => {
     setIsLoading(true);
@@ -50,6 +40,7 @@ export default function Protected() {
       }));
       
       setItems(itemsWithAccounts);
+      setLastUpdated(new Date());
 
       let totalAssets = 0;
       let totalLiabilities = 0;
@@ -84,116 +75,40 @@ export default function Protected() {
     getItemsAndAccounts();
   }, []);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   return (
-    <Flex direction={{ base: 'column', large: 'row' }} minHeight="100vh">
-      {/* Mobile Header */}
-      <View
-        display={{ base: 'block', large: 'none' }}
-        padding="1rem"
-        backgroundColor="var(--amplify-colors-background-secondary)"
+    <Flex direction="column" gap={{ base: '1rem', medium: '2rem' }}>
+      {/* Breadcrumbs */}
+      <Flex 
+        gap="0.5rem" 
+        color="var(--amplify-colors-neutral-60)"
+        display={{ base: 'none', medium: 'flex' }}
       >
-        <Flex justifyContent="space-between" alignItems="center">
-          <Heading level={4}>Financial Dashboard</Heading>
-          <Button
-            variation="link"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            <Icon fontSize="1.5rem">{isSidebarOpen ? 'close' : 'menu'}</Icon>
-          </Button>
-        </Flex>
-      </View>
+        <Text>Dashboard</Text>
+        <Text>/</Text>
+        <Text>Overview</Text>
+      </Flex>
 
-      {/* Sidebar Navigation */}
-      <View 
-        width={{ base: '100%', large: '250px' }}
-        padding="1.5rem"
-        backgroundColor="var(--amplify-colors-background-secondary)"
-        style={{ 
-          borderRight: '1px solid var(--amplify-colors-border-secondary)',
-          display: { base: isSidebarOpen ? 'block' : 'none', large: 'block' },
-          position: { base: 'fixed', large: 'relative' },
-          top: { base: '60px', large: '0' },
-          left: '0',
-          right: '0',
-          zIndex: '100'
-        }}
-      >
-        <Flex direction="column" gap="2rem">
-          <Heading level={4} display={{ base: 'none', large: 'block' }}>
-            Financial Dashboard
-          </Heading>
-          <Flex direction="column" gap="0.5rem">
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                variation="text"
-                onClick={() => {
-                  navigate(item.path);
-                  setIsSidebarOpen(false);
-                }}
-                style={{
-                  justifyContent: 'flex-start',
-                  backgroundColor: location.pathname === item.path ? 'var(--amplify-colors-background-tertiary)' : 'transparent',
-                  padding: '0.75rem'
-                }}
-              >
-                <Flex gap="0.5rem" alignItems="center">
-                  <Icon fontSize="1.2rem">{item.icon}</Icon>
-                  <Text>{item.name}</Text>
-                </Flex>
-              </Button>
-            ))}
-          </Flex>
-        </Flex>
-      </View>
-      
-      {/* Main Content */}
-      <View 
-        flex="1" 
-        padding={{ base: '1rem', medium: '2rem' }}
-        backgroundColor="var(--amplify-colors-background-primary)"
-        style={{
-          marginTop: { base: isSidebarOpen ? '60px' : '0', large: '0' }
-        }}
-      >
-        <Flex direction="column" gap={{ base: '1rem', medium: '2rem' }}>
-          {/* Breadcrumbs */}
-          <Flex 
-            gap="0.5rem" 
-            color="var(--amplify-colors-neutral-60)"
-            display={{ base: 'none', medium: 'flex' }}
-          >
-            <Text>Dashboard</Text>
-            <Text>/</Text>
-            <Text>Overview</Text>
-          </Flex>
+      {error && (
+        <View 
+          padding="1rem" 
+          backgroundColor="var(--amplify-colors-red-10)" 
+          color="var(--amplify-colors-red-80)" 
+          borderRadius="medium"
+        >
+          <Text fontSize={{ base: 'small', medium: 'medium' }}>{error}</Text>
+        </View>
+      )}
 
-          {error && (
-            <View 
-              padding="1rem" 
-              backgroundColor="var(--amplify-colors-red-10)" 
-              color="var(--amplify-colors-red-80)" 
-              borderRadius="medium"
-            >
-              <Text fontSize={{ base: 'small', medium: 'medium' }}>{error}</Text>
-            </View>
-          )}
+      {/* Summary Cards */}
+      <Summary assets={assets} liabilities={liabilities} isLoading={isLoading} />
 
-          {/* Plaid Link */}
-          <Plaid getItems={getItemsAndAccounts}/>
-
-          {/* Summary Cards */}
-          <Summary assets={assets} liabilities={liabilities} isLoading={isLoading} />
-
-          {/* Institutions Grid */}
-          <Institutions 
-            institutions={items} 
-            isLoading={isLoading} 
-          />
-        </Flex>
-      </View>
+      {/* Institutions Grid */}
+      <Institutions 
+        institutions={items} 
+        isLoading={isLoading} 
+        onRefresh={getItemsAndAccounts} 
+        lastUpdated={lastUpdated} 
+      />
     </Flex>
   );
 }

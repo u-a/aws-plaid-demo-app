@@ -1,7 +1,8 @@
 import { Flex, View, Heading, Text, Card } from '@aws-amplify/ui-react';
 import Institution from './Institution';
+import Refresh from './Refresh';
 
-export default function Institutions({ institutions = [], isLoading }) {
+export default function Institutions({ institutions = [], isLoading, onRefresh, lastUpdated }) {
   const EmptyState = () => (
     <Card variation="outlined" textAlign="center" padding="2rem">
       <Heading level={5}>No Institutions Connected</Heading>
@@ -26,6 +27,7 @@ export default function Institutions({ institutions = [], isLoading }) {
     <View>
       <Flex justifyContent="space-between" alignItems="center" marginBottom="1rem">
         <Heading level={4}>Connected Institutions</Heading>
+        <Refresh onRefresh={onRefresh} isLoading={isLoading} lastUpdated={lastUpdated} />
       </Flex>
       
       {isLoading ? (
