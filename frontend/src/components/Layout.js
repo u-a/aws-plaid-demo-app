@@ -10,13 +10,15 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Use 992px to match Amplify's 'large' breakpoint
-  // This ensures consistency: mobile menu shows when < 992px
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 992);
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      setIsMobile(width < 992);
+      console.log('Window width:', width, 'isMobile:', width < 992);
     };
     
     checkMobile();
@@ -41,56 +43,90 @@ export default function Layout() {
     return <Outlet />;
   }
 
+  console.log('Layout rendering - isMobile:', isMobile, 'width:', windowWidth, 'route:', route);
+
   return (
-    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh' }}>
-      {/* Mobile Header - Only show on mobile */}
-      {isMobile && (
-        <div
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: isMobile ? 'column' : 'row', 
+      minHeight: '100vh',
+      margin: 0,
+      padding: 0
+    }}>
+      {/* Debug indicator - Remove this after testing */}
+      <div style={{
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px',
+        background: 'red',
+        color: 'white',
+        padding: '10px',
+        zIndex: 9999,
+        fontSize: '12px',
+        borderRadius: '4px'
+      }}>
+        Width: {windowWidth}px | Mobile: {isMobile ? 'YES' : 'NO'}
+      </div>
+
+      {/* Mobile Header - ALWAYS show when isMobile is true */}
+      <div
+        style={{
+          display: isMobile ? 'flex' : 'none',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '56px',
+          padding: '0 1rem',
+          backgroundColor: '#2c3e50',
+          borderBottom: '2px solid #34495e',
+          zIndex: 1000,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxSizing: 'border-box'
+        }}
+      >
+        <h4 style={{ margin: 0, fontSize: '18px', color: '#ffffff' }}>Financial Dashboard</h4>
+        <button
+          onClick={() => {
+            console.log('Hamburger clicked! Current state:', isSidebarOpen);
+            setIsSidebarOpen(!isSidebarOpen);
+          }}
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '56px',
-            padding: '1rem',
-            backgroundColor: 'var(--amplify-colors-background-secondary)',
-            borderBottom: '1px solid var(--amplify-colors-border-secondary)',
-            zIndex: 100,
+            backgroundColor: '#3498db',
+            border: '2px solid #2980b9',
+            fontSize: '24px',
+            color: '#ffffff',
+            cursor: 'pointer',
+            padding: '8px 12px',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '44px',
+            minHeight: '44px',
+            borderRadius: '4px'
           }}
         >
-          <Heading level={4} margin={0}>Financial Dashboard</Heading>
-          <Button
-            variation="link"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            style={{
-              padding: '0.5rem',
-              color: 'var(--amplify-colors-font-primary)',
-              backgroundColor: 'transparent'
-            }}
-          >
-            <Icon fontSize="1.5rem">{isSidebarOpen ? 'close' : 'menu'}</Icon>
-          </Button>
-        </div>
-      )}
+          {isSidebarOpen ? '✕' : '☰'}
+        </button>
+      </div>
 
-      {/* Sidebar - Always rendered, visibility controlled */}
+      {/* Sidebar */}
       <div
         style={{
           width: '280px',
           height: isMobile ? 'calc(100vh - 56px)' : '100vh',
           padding: '1.5rem',
-          backgroundColor: 'var(--amplify-colors-background-secondary)',
-          borderRight: '1px solid var(--amplify-colors-border-secondary)',
+          backgroundColor: '#f5f5f5',
+          borderRight: '1px solid #ddd',
           overflowY: 'auto',
           position: isMobile ? 'fixed' : 'sticky',
           top: isMobile ? '56px' : '0',
           left: '0',
-          zIndex: 99,
+          zIndex: 999,
           display: isMobile && !isSidebarOpen ? 'none' : 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          boxSizing: 'border-box'
         }}
       >
         <Flex direction="column" height="100%">
@@ -148,7 +184,7 @@ export default function Layout() {
         </Flex>
       </div>
 
-      {/* Mobile Overlay - Only show on mobile when sidebar is open */}
+      {/* Mobile Overlay */}
       {isMobile && isSidebarOpen && (
         <div
           style={{
@@ -157,8 +193,8 @@ export default function Layout() {
             left: '0',
             right: '0',
             bottom: '0',
-            backgroundColor: 'rgba(0,0,0,0.3)',
-            zIndex: 98
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 998
           }}
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -173,7 +209,8 @@ export default function Layout() {
           minHeight: '100vh',
           position: 'relative',
           maxWidth: isMobile ? '100%' : 'calc(100% - 280px)',
-          padding: '1.5rem'
+          padding: '1.5rem',
+          boxSizing: 'border-box'
         }}
       >
         <Outlet />

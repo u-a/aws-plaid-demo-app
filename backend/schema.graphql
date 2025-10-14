@@ -6,6 +6,8 @@ type Query {
   getItems(limit: Int, cursor: String): PaginatedItems!
   getAccounts(id: ID!): [Account!]!
   getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
+  getFinancialSummary: FinancialSummary!
+  getItemsWithAccounts: [ItemWithAccounts!]!
 }
 
 type Item {
@@ -47,4 +49,34 @@ type Transaction {
 type PaginatedTransactions {
   cursor: String
   transactions: [Transaction!]!
+}
+
+type FinancialSummary {
+  totalAssets: Float!
+  totalLiabilities: Float!
+  netWorth: Float!
+  assetsByType: AssetBreakdown!
+  liabilitiesByType: LiabilityBreakdown!
+  lastUpdated: AWSDateTime!
+}
+
+type AssetBreakdown {
+  depository: Float!
+  investment: Float!
+  total: Float!
+}
+
+type LiabilityBreakdown {
+  credit: Float!
+  loan: Float!
+  total: Float!
+}
+
+type ItemWithAccounts {
+  item_id: ID!
+  institution_id: String!
+  institution_name: String!
+  accounts: [Account!]!
+  totalBalance: Float
+  accountCount: Int!
 }

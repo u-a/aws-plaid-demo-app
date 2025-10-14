@@ -46,8 +46,10 @@ export default function Accounts({ id, updateAccounts, onAccountSelect, selected
   }
 
   useEffect(() => {
-    getAccounts();
-  }, []);
+    if (id) {
+      getAccounts();
+    }
+  }, [id]);
 
   // Filter and sort accounts
   const filteredAndSortedAccounts = useMemo(() => {
@@ -73,8 +75,8 @@ export default function Accounts({ id, updateAccounts, onAccountSelect, selected
       let bValue = b[sortConfig.key];
       
       if (sortConfig.key === 'balances') {
-        aValue = a.balances?.current || 0;
-        bValue = b.balances?.current || 0;
+        aValue = parseFloat(a.balances?.current) || 0;
+        bValue = parseFloat(b.balances?.current) || 0;
       }
       
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
